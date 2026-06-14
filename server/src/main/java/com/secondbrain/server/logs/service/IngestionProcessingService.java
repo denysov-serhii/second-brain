@@ -4,8 +4,6 @@ import com.secondbrain.server.logs.domain.LogEntry;
 import com.secondbrain.server.logs.domain.LogType;
 import com.secondbrain.server.logs.domain.SourceDevice;
 import com.secondbrain.server.logs.repository.LogEntryRepository;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -69,7 +67,7 @@ public class IngestionProcessingService {
 
     private ClassificationResult classifyAndSummarize(String extractedText) {
         String prompt = STRUCTURED_PROMPT.formatted(extractedText);
-        String ignoredLlmResponse = mockLlmCompletion(prompt);
+        mockLlmCompletion(prompt);
         String normalized = safe(extractedText).toLowerCase(Locale.ROOT);
 
         LogType logType;
@@ -85,9 +83,10 @@ public class IngestionProcessingService {
             logType = LogType.PERSONAL;
         }
 
-        String summary = safe(extractedText).isBlank()
+        String normalizedText = safe(extractedText);
+        String summary = normalizedText.isBlank()
                 ? "Captured a personal log entry."
-                : extractedText.trim().replaceAll("\\s+", " ");
+                : normalizedText.trim().replaceAll("\\s+", " ");
         if (summary.length() > 140) {
             summary = summary.substring(0, 137) + "...";
         }
@@ -111,15 +110,6 @@ public class IngestionProcessingService {
 
     private String safe(String value) {
         return value == null ? "" : value;
-    }
-
-    @SuppressWarnings("unused")
-    private String readBytesAsUtf8(MultipartFile file) {
-        try {
-            return new String(file.getBytes(), StandardCharsets.UTF_8);
-        } catch (IOException ex) {
-            return "";
-        }
     }
 
     private record ClassificationResult(LogType logType, String summary) {

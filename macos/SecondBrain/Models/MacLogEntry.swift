@@ -4,31 +4,31 @@ import SwiftData
 @Model
 final class MacLogEntry {
     var id: UUID
-    var raw_content: String?
-    var extracted_text: String?
+    var rawContent: String?
+    var extractedText: String?
     var summary: String?
-    var log_type: String?
+    var logType: String?
     var embedding: [Float]?
-    var created_at: Date
-    var source_device: String
+    var createdAt: Date
+    var sourceDevice: String
 
     init(
         id: UUID = UUID(),
-        raw_content: String? = nil,
-        extracted_text: String? = nil,
+        rawContent: String? = nil,
+        extractedText: String? = nil,
         summary: String? = nil,
-        log_type: String? = nil,
+        logType: String? = nil,
         embedding: [Float]? = nil,
-        created_at: Date = .now,
-        source_device: String = "MACOS"
+        createdAt: Date = .now,
+        sourceDevice: String = "MACOS"
     ) {
         self.id = id
-        self.raw_content = raw_content
-        self.extracted_text = extracted_text
+        self.rawContent = rawContent
+        self.extractedText = extractedText
         self.summary = summary
-        self.log_type = log_type
+        self.logType = logType
         self.embedding = embedding
-        self.created_at = created_at
-        self.source_device = source_device
+        self.createdAt = createdAt
+        self.sourceDevice = sourceDevice
     }
 }
