@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class IngestionProcessingService {
 
+    private static final int EMBEDDING_DIMENSION = 1536;
     private static final String DEFAULT_SUMMARY = "Captured a personal log entry.";
     private static final String STRUCTURED_PROMPT = """
             You are classifying life-log text into one of these enum values:
@@ -69,26 +70,29 @@ public class IngestionProcessingService {
     private ClassificationResult classifyAndSummarize(String extractedText) {
         String prompt = STRUCTURED_PROMPT.formatted(extractedText);
         String llmJson = mockLlmCompletion(prompt);
+        String llmLogType = extractLogTypeFromMock(llmJson);
         String llmSummary = extractSummaryFromMock(llmJson);
         String safeText = safe(extractedText);
         String classificationText = safeText.toLowerCase(Locale.ROOT);
 
-        LogType logType;
-        if (classificationText.contains("todo") || classificationText.contains("task")) {
-            logType = LogType.TASK_INPUT;
-        } else if (classificationText.contains("meeting")) {
-            logType = LogType.MEETING_NOTE;
-        } else if (classificationText.contains("idea")) {
-            logType = LogType.IDEA;
-        } else if (classificationText.contains("insight") || classificationText.contains("learned")) {
-            logType = LogType.INSIGHT;
-        } else {
-            logType = LogType.PERSONAL;
+        LogType logType = parseLogType(llmLogType);
+        if (logType == null) {
+            if (classificationText.contains("todo") || classificationText.contains("task")) {
+                logType = LogType.TASK_INPUT;
+            } else if (classificationText.contains("meeting")) {
+                logType = LogType.MEETING_NOTE;
+            } else if (classificationText.contains("idea")) {
+                logType = LogType.IDEA;
+            } else if (classificationText.contains("insight") || classificationText.contains("learned")) {
+                logType = LogType.INSIGHT;
+            } else {
+                logType = LogType.PERSONAL;
+            }
         }
 
-        String summary = safeText.isBlank()
-                ? llmSummary
-                : safeText.trim().replaceAll("\\s+", " ");
+        String summary = llmSummary.isBlank()
+                ? DEFAULT_SUMMARY
+                : llmSummary.trim().replaceAll("\\s+", " ");
         if (summary.length() > 140) {
             summary = summary.substring(0, 137) + "...";
         }
@@ -117,8 +121,29 @@ public class IngestionProcessingService {
         return value.isEmpty() ? DEFAULT_SUMMARY : value;
     }
 
+    private String extractLogTypeFromMock(String llmJson) {
+        int keyIndex = llmJson.indexOf("\"log_type\":\"");
+        if (keyIndex < 0) {
+            return "";
+        }
+        int start = keyIndex + "\"log_type\":\"".length();
+        int end = llmJson.indexOf("\"", start);
+        if (end < 0) {
+            return "";
+        }
+        return llmJson.substring(start, end).trim();
+    }
+
+    private LogType parseLogType(String value) {
+        try {
+            return LogType.valueOf(safe(value).trim());
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
     private float[] generateMockEmbedding(String text) {
-        float[] vector = new float[1536];
+        float[] vector = new float[EMBEDDING_DIMENSION];
         int hash = safe(text).hashCode();
         for (int i = 0; i < vector.length; i++) {
             vector[i] = ((hash + i) % 1000) / 1000.0f;

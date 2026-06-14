@@ -19,7 +19,7 @@ class LogRepository(
         val localLog = LocalLogEntity(
             id = logId,
             rawContent = text,
-            extractedText = text,
+            extractedText = null,
             summary = null,
             logType = type,
             embedding = null,
