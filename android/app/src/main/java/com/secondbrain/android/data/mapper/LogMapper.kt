@@ -26,9 +26,17 @@ fun RemoteLogDto.toDomain(): Log = Log(
     logType = logType,
     embedding = embedding,
     localFileUri = null,
-    createdAt = createdAt?.let {
-        runCatching { Instant.parse(it).toEpochMilli() }.getOrDefault(System.currentTimeMillis())
-    } ?: System.currentTimeMillis(),
+    createdAt = createdAt?.let { rawCreatedAt ->
+        runCatching { Instant.parse(rawCreatedAt).toEpochMilli() }
+            .getOrElse { cause ->
+                throw IllegalArgumentException(
+                    "Invalid created_at format: $rawCreatedAt. Expected ISO-8601 timestamp.",
+                    cause
+                )
+            }
+    } ?: throw IllegalArgumentException(
+        "Missing created_at in remote log payload. Expected ISO-8601 timestamp."
+    ),
     sourceDevice = sourceDevice,
     isSynced = true
 )
@@ -56,4 +64,3 @@ fun LocalLogEntity.toRemoteDto(): RemoteLogDto = RemoteLogDto(
     sourceDevice = sourceDevice,
     createdAt = Instant.ofEpochMilli(createdAt).toString()
 )
-

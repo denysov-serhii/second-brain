@@ -16,6 +16,7 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "API_BASE_URL", "\"https://api.secondbrain.example/\"")
     }
 
     buildTypes {
@@ -30,6 +31,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
@@ -48,7 +50,7 @@ dependencies {
     val hiltVersion = "2.52"
     val hiltNavigationComposeVersion = "1.2.0"
     val workVersion = "2.10.0"
-    val composeBomVersion = "2025.01.01"
+    val composeBomVersion = "2024.10.01"
     val lifecycleVersion = "2.8.7"
 
     implementation(platform("androidx.compose:compose-bom:$composeBomVersion"))
@@ -83,5 +85,7 @@ dependencies {
 
 kapt {
     correctErrorTypes = true
+    arguments {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
 }
-

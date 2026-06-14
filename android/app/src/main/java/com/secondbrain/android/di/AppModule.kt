@@ -3,6 +3,7 @@ package com.secondbrain.android.di
 import android.content.Context
 import androidx.room.Room
 import androidx.work.WorkManager
+import com.secondbrain.android.BuildConfig
 import com.secondbrain.android.data.local.AppDatabase
 import com.secondbrain.android.data.local.LogDao
 import com.secondbrain.android.data.remote.LogApiService
@@ -36,7 +37,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit = Retrofit.Builder()
-        .baseUrl("https://api.secondbrain.example/")
+        .baseUrl(BuildConfig.API_BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -53,13 +54,14 @@ object AppModule {
     @Provides
     @Singleton
     fun provideLogRepository(
+        @ApplicationContext context: Context,
         logDao: LogDao,
         workManager: WorkManager,
         logApiService: LogApiService
     ): LogRepository = LogRepository(
+        context = context,
         logDao = logDao,
         workManager = workManager,
         logApiService = logApiService
     )
 }
-
