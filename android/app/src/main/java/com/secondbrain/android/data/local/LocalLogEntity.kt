@@ -19,8 +19,12 @@ data class LocalLogEntity(
     val logType: String?,
     @ColumnInfo(name = "embedding")
     val embedding: String?,
+    @ColumnInfo(name = "local_file_uri")
+    val localFileUri: String?,
     @ColumnInfo(name = "created_at")
     val createdAt: Long,
     @ColumnInfo(name = "source_device")
-    val sourceDevice: String
+    val sourceDevice: String,
+    @ColumnInfo(name = "is_synced")
+    val isSynced: Boolean
 )
