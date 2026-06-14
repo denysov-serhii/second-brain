@@ -1,0 +1,6 @@
+.git
+.github
+**/target
+**/build
+**/.DS_Store
+README.md

@@ -1,0 +1,42 @@
+services:
+  # PostgreSQL for local development and integration testing.
+  postgres:
+    image: postgres:16-alpine
+    container_name: second-brain-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: second_brain
+      POSTGRES_USER: second_brain
+      POSTGRES_PASSWORD: second_brain
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Native backend app built from this repository Dockerfile.
+  second-brain-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: second-brain-server
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      DB_URL: jdbc:postgresql://postgres:5432/second_brain
+      DB_USERNAME: second_brain
+      DB_PASSWORD: second_brain
+    ports:
+      - "8080:8080"
+
+volumes:
+  # Persistent PostgreSQL data for local developer environments.
+  postgres_data:
