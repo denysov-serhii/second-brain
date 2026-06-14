@@ -68,25 +68,25 @@ public class IngestionProcessingService {
     private ClassificationResult classifyAndSummarize(String extractedText) {
         String prompt = STRUCTURED_PROMPT.formatted(extractedText);
         mockLlmCompletion(prompt);
-        String normalized = safe(extractedText).toLowerCase(Locale.ROOT);
+        String safeText = safe(extractedText);
+        String classificationText = safeText.toLowerCase(Locale.ROOT);
 
         LogType logType;
-        if (normalized.contains("todo") || normalized.contains("task")) {
+        if (classificationText.contains("todo") || classificationText.contains("task")) {
             logType = LogType.TASK_INPUT;
-        } else if (normalized.contains("meeting")) {
+        } else if (classificationText.contains("meeting")) {
             logType = LogType.MEETING_NOTE;
-        } else if (normalized.contains("idea")) {
+        } else if (classificationText.contains("idea")) {
             logType = LogType.IDEA;
-        } else if (normalized.contains("insight") || normalized.contains("learned")) {
+        } else if (classificationText.contains("insight") || classificationText.contains("learned")) {
             logType = LogType.INSIGHT;
         } else {
             logType = LogType.PERSONAL;
         }
 
-        String normalizedText = safe(extractedText);
-        String summary = normalizedText.isBlank()
+        String summary = safeText.isBlank()
                 ? "Captured a personal log entry."
-                : normalizedText.trim().replaceAll("\\s+", " ");
+                : safeText.trim().replaceAll("\\s+", " ");
         if (summary.length() > 140) {
             summary = summary.substring(0, 137) + "...";
         }
@@ -94,6 +94,9 @@ public class IngestionProcessingService {
     }
 
     private String mockLlmCompletion(String prompt) {
+        if (prompt.isBlank()) {
+            return "{\"log_type\":\"PERSONAL\",\"summary\":\"Captured a personal log entry.\"}";
+        }
         return """
                 {"log_type":"PERSONAL","summary":"Captured a personal log entry."}
                 """;
