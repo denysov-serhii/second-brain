@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class IngestionProcessingService {
 
+    private static final String DEFAULT_SUMMARY = "Captured a personal log entry.";
     private static final String STRUCTURED_PROMPT = """
             You are classifying life-log text into one of these enum values:
             IDEA, TASK_INPUT, MEETING_NOTE, INSIGHT, PERSONAL.
@@ -67,7 +68,8 @@ public class IngestionProcessingService {
 
     private ClassificationResult classifyAndSummarize(String extractedText) {
         String prompt = STRUCTURED_PROMPT.formatted(extractedText);
-        mockLlmCompletion(prompt);
+        String llmJson = mockLlmCompletion(prompt);
+        String llmSummary = extractSummaryFromMock(llmJson);
         String safeText = safe(extractedText);
         String classificationText = safeText.toLowerCase(Locale.ROOT);
 
@@ -85,7 +87,7 @@ public class IngestionProcessingService {
         }
 
         String summary = safeText.isBlank()
-                ? "Captured a personal log entry."
+                ? llmSummary
                 : safeText.trim().replaceAll("\\s+", " ");
         if (summary.length() > 140) {
             summary = summary.substring(0, 137) + "...";
@@ -94,12 +96,25 @@ public class IngestionProcessingService {
     }
 
     private String mockLlmCompletion(String prompt) {
-        if (prompt.isBlank()) {
-            return "{\"log_type\":\"PERSONAL\",\"summary\":\"Captured a personal log entry.\"}";
-        }
+        String normalizedPrompt = safe(prompt).toLowerCase(Locale.ROOT);
+        String mockType = normalizedPrompt.contains("meeting") ? "MEETING_NOTE" : "PERSONAL";
         return """
-                {"log_type":"PERSONAL","summary":"Captured a personal log entry."}
-                """;
+                {"log_type":"%s","summary":"%s"}
+                """.formatted(mockType, DEFAULT_SUMMARY);
+    }
+
+    private String extractSummaryFromMock(String llmJson) {
+        int keyIndex = llmJson.indexOf("\"summary\":\"");
+        if (keyIndex < 0) {
+            return DEFAULT_SUMMARY;
+        }
+        int start = keyIndex + "\"summary\":\"".length();
+        int end = llmJson.indexOf("\"", start);
+        if (end < 0) {
+            return DEFAULT_SUMMARY;
+        }
+        String value = llmJson.substring(start, end).trim();
+        return value.isEmpty() ? DEFAULT_SUMMARY : value;
     }
 
     private float[] generateMockEmbedding(String text) {
