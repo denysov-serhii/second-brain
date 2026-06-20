@@ -14,7 +14,7 @@ import UniformTypeIdentifiers
 
 final class ShareViewController: NSViewController {
 
-    private var loadingIndicator: NSProgressIndicator?
+    private var statusLabel: NSTextField?
 
     override func loadView() {
         view = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 200))
@@ -29,16 +29,16 @@ final class ShareViewController: NSViewController {
     // MARK: - UI
 
     private func setupUI() {
-        let label = NSTextField(labelWithString: "Saving to Second Brain…")
-        label.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(label)
-
         let indicator = NSProgressIndicator()
         indicator.style = .spinning
         indicator.translatesAutoresizingMaskIntoConstraints = false
         indicator.startAnimation(nil)
         view.addSubview(indicator)
-        loadingIndicator = indicator
+
+        let label = NSTextField(labelWithString: "Saving to Second Brain…")
+        label.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(label)
+        statusLabel = label
 
         NSLayoutConstraint.activate([
             indicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -60,16 +60,18 @@ final class ShareViewController: NSViewController {
         Task {
             do {
                 try await uploadItems(attachments)
+                statusLabel?.stringValue = "Saved!"
             } catch {
-                // Silently complete - the user will see the entry missing if sync fails
+                statusLabel?.stringValue = "Failed to save: \(error.localizedDescription)"
+                // Give the user a moment to read the error before closing.
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
             }
             done()
         }
     }
 
     private func uploadItems(_ providers: [NSItemProvider]) async throws {
-        let baseURL = URL(string: "https://api.secondbrain.example")!
-        let networkService = NetworkService(baseURL: baseURL)
+        let networkService = NetworkService(baseURL: AppConfiguration.apiBaseURL)
 
         for provider in providers {
             if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier) {
@@ -99,12 +101,8 @@ final class ShareViewController: NSViewController {
             provider.loadItem(forTypeIdentifier: UTType.plainText.identifier, options: nil) { item, error in
                 if let error {
                     continuation.resume(throwing: error)
-                    return
-                }
-                if let text = item as? String {
-                    continuation.resume(returning: text)
                 } else {
-                    continuation.resume(returning: nil)
+                    continuation.resume(returning: item as? String)
                 }
             }
         }
@@ -115,12 +113,8 @@ final class ShareViewController: NSViewController {
             provider.loadItem(forTypeIdentifier: UTType.url.identifier, options: nil) { item, error in
                 if let error {
                     continuation.resume(throwing: error)
-                    return
-                }
-                if let url = item as? URL {
-                    continuation.resume(returning: url)
                 } else {
-                    continuation.resume(returning: nil)
+                    continuation.resume(returning: item as? URL)
                 }
             }
         }
@@ -131,12 +125,8 @@ final class ShareViewController: NSViewController {
             provider.loadItem(forTypeIdentifier: type.identifier, options: nil) { item, error in
                 if let error {
                     continuation.resume(throwing: error)
-                    return
-                }
-                if let url = item as? URL {
-                    continuation.resume(returning: url)
                 } else {
-                    continuation.resume(returning: nil)
+                    continuation.resume(returning: item as? URL)
                 }
             }
         }

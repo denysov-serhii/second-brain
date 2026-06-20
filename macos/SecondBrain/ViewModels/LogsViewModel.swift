@@ -11,9 +11,7 @@ final class LogsViewModel {
     private let networkService: NetworkService
     private var modelContext: ModelContext?
 
-    init(networkService: NetworkService = NetworkService(
-        baseURL: URL(string: "https://api.secondbrain.example")!
-    )) {
+    init(networkService: NetworkService = NetworkService()) {
         self.networkService = networkService
     }
 
