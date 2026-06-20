@@ -52,6 +52,7 @@ dependencies {
     val workVersion = "2.10.0"
     val composeBomVersion = "2024.10.01"
     val lifecycleVersion = "2.8.7"
+    val navigationVersion = "2.8.5"
 
     implementation(platform("androidx.compose:compose-bom:$composeBomVersion"))
     implementation("androidx.compose.ui:ui")
@@ -73,6 +74,7 @@ dependencies {
     implementation("com.google.dagger:hilt-android:$hiltVersion")
     kapt("com.google.dagger:hilt-compiler:$hiltVersion")
     implementation("androidx.hilt:hilt-navigation-compose:$hiltNavigationComposeVersion")
+    implementation("androidx.navigation:navigation-compose:$navigationVersion")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation(platform("androidx.compose:compose-bom:$composeBomVersion"))

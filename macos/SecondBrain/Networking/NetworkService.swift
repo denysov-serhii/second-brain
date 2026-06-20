@@ -6,20 +6,69 @@ enum NetworkError: Error {
     case invalidStatusCode(Int)
 }
 
+struct LogEntryDTO: Decodable {
+    let id: UUID?
+    let rawContent: String?
+    let extractedText: String?
+    let summary: String?
+    let logType: String?
+    let sourceDevice: String?
+    let createdAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case rawContent = "raw_content"
+        case extractedText = "extracted_text"
+        case summary
+        case logType = "log_type"
+        case sourceDevice = "source_device"
+        case createdAt = "created_at"
+    }
+}
+
 final class NetworkService {
+    private let baseURL: URL
     private let ingestURL: URL
     private let session: URLSession
 
-    init(baseURL: URL, session: URLSession = .shared) {
+    init(baseURL: URL = AppConfiguration.apiBaseURL, session: URLSession = .shared) {
+        self.baseURL = baseURL
         self.ingestURL = baseURL.appending(path: "/api/v1/logs/ingest")
         self.session = session
+    }
+
+    func fetchLogs(page: Int = 0, size: Int = 50) async throws -> [LogEntryDTO] {
+        var components = URLComponents(
+            url: baseURL.appending(path: "/api/v1/logs"),
+            resolvingAgainstBaseURL: false
+        )!
+        components.queryItems = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "size", value: "\(size)")
+        ]
+        guard let url = components.url else { throw NetworkError.badResponse }
+
+        let (data, response) = try await session.data(from: url)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.badResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw NetworkError.invalidStatusCode(httpResponse.statusCode)
+        }
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode([LogEntryDTO].self, from: data)
     }
 
     func uploadLog(content: String?, fileUrl: URL?) async throws {
         let boundary = "Boundary-\(UUID().uuidString)"
         var request = URLRequest(url: ingestURL)
         request.httpMethod = "POST"
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.setValue(
+            "multipart/form-data; boundary=\(boundary)",
+            forHTTPHeaderField: "Content-Type"
+        )
 
         var body = Data()
         body.appendMultipartField(name: "raw_content", value: content ?? "", boundary: boundary)
@@ -28,8 +77,14 @@ final class NetworkService {
         if let fileUrl {
             let fileData = try Data(contentsOf: fileUrl)
             let filename = fileUrl.lastPathComponent
-            let mimeType = mimeType(for: fileUrl)
-            body.appendMultipartFile(name: "file", filename: filename, mimeType: mimeType, data: fileData, boundary: boundary)
+            let mime = mimeType(for: fileUrl)
+            body.appendMultipartFile(
+                name: "file",
+                filename: filename,
+                mimeType: mime,
+                data: fileData,
+                boundary: boundary
+            )
         }
 
         body.appendString("--\(boundary)--\r\n")
@@ -45,10 +100,7 @@ final class NetworkService {
     }
 
     private func mimeType(for fileUrl: URL) -> String {
-        if let type = UTType(filenameExtension: fileUrl.pathExtension)?.preferredMIMEType {
-            return type
-        }
-        return "application/octet-stream"
+        UTType(filenameExtension: fileUrl.pathExtension)?.preferredMIMEType ?? "application/octet-stream"
     }
 }
 

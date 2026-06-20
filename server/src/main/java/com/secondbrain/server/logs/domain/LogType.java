@@ -5,5 +5,6 @@ public enum LogType {
     TASK_INPUT,
     MEETING_NOTE,
     INSIGHT,
-    PERSONAL
+    PERSONAL,
+    AUDIO
 }
