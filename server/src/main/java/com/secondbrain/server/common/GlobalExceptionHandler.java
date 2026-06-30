@@ -33,8 +33,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex) {
+        String statusError = ex.getStatusCode() instanceof HttpStatus hs ? hs.getReasonPhrase() : "Error";
         return ResponseEntity.status(ex.getStatusCode())
-                .body(new ErrorResponse(ex.getStatusCode().value(), ex.getReason(), ex.getReason(), Instant.now()));
+                .body(new ErrorResponse(ex.getStatusCode().value(), statusError, ex.getReason(), Instant.now()));
     }
 
     @ExceptionHandler(Exception.class)

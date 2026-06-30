@@ -60,7 +60,9 @@ All endpoints are prefixed with `/api`.
 { "email": "alice@example.com", "password": "secret123" }
 ```
 
-### Streams (protected — `Authorization: ******
+### Streams (protected — JWT required)
+
+Set `Authorization: Bearer {jwt}` in the request headers, where `{jwt}` is the token returned by login or register.
 
 | Method | Path | Description |
 |---|---|---|
@@ -72,7 +74,9 @@ All endpoints are prefixed with `/api`.
 { "name": "My Stream" }
 ```
 
-### Events (protected — `Authorization: ******
+### Events (protected — JWT required)
+
+Set `Authorization: Bearer {jwt}` in the request headers, where `{jwt}` is the token returned by login or register.
 
 | Method | Path | Description |
 |---|---|---|
