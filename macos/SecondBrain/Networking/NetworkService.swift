@@ -4,7 +4,6 @@ import UniformTypeIdentifiers
 enum NetworkError: Error {
     case badResponse
     case invalidStatusCode(Int)
-    case invalidAIProviderConfiguration
 }
 
 struct LogEntryDTO: Decodable {

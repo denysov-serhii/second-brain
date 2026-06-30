@@ -22,9 +22,8 @@ final class AIResultFileService {
     ) throws -> URL {
         try ensureDirectoryExists()
 
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyyMMdd_HHmmss_SSS"
-        let fileName = "ai_result_\(formatter.string(from: .now)).json"
+        let millis = Int(Date().timeIntervalSince1970 * 1000)
+        let fileName = "ai_result_\(millis).json"
         let targetURL = resultsDirectory.appendingPathComponent(fileName)
 
         let payload: [String: Any?] = [
