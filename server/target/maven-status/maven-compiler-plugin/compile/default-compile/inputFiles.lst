@@ -1,0 +1,10 @@
+/home/runner/work/second-brain/second-brain/server/src/main/java/com/secondbrain/server/SecondBrainApplication.java
+/home/runner/work/second-brain/second-brain/server/src/main/java/com/secondbrain/server/logs/api/LogController.java
+/home/runner/work/second-brain/second-brain/server/src/main/java/com/secondbrain/server/logs/api/LogIngestionController.java
+/home/runner/work/second-brain/second-brain/server/src/main/java/com/secondbrain/server/logs/api/LogIngestionResponse.java
+/home/runner/work/second-brain/second-brain/server/src/main/java/com/secondbrain/server/logs/domain/LogEntry.java
+/home/runner/work/second-brain/second-brain/server/src/main/java/com/secondbrain/server/logs/domain/LogType.java
+/home/runner/work/second-brain/second-brain/server/src/main/java/com/secondbrain/server/logs/domain/SourceDevice.java
+/home/runner/work/second-brain/second-brain/server/src/main/java/com/secondbrain/server/logs/repository/LogEntryRepository.java
+/home/runner/work/second-brain/second-brain/server/src/main/java/com/secondbrain/server/logs/service/IngestionProcessingService.java
+/home/runner/work/second-brain/second-brain/server/src/main/java/com/secondbrain/server/logs/service/LogQueryService.java
