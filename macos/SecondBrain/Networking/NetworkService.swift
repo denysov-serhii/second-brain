@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 enum NetworkError: Error {
     case badResponse
     case invalidStatusCode(Int)
+    case invalidAIProviderConfiguration
 }
 
 struct LogEntryDTO: Decodable {
@@ -97,6 +98,63 @@ final class NetworkService {
         guard (200...299).contains(httpResponse.statusCode) else {
             throw NetworkError.invalidStatusCode(httpResponse.statusCode)
         }
+    }
+
+    func callAI(
+        provider: AIProviderConfiguration,
+        prompt: String,
+        fileUrl: URL?
+    ) async throws -> String {
+        var request = URLRequest(url: provider.endpoint)
+        request.httpMethod = "POST"
+
+        let apiKey = provider.apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !apiKey.isEmpty {
+            request.setValue(
+                provider.apiKeyPrefix + apiKey,
+                forHTTPHeaderField: provider.apiKeyHeader
+            )
+        }
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue(
+            "multipart/form-data; boundary=\(boundary)",
+            forHTTPHeaderField: "Content-Type"
+        )
+
+        var body = Data()
+        body.appendMultipartField(name: "prompt", value: prompt, boundary: boundary)
+
+        if let fileUrl {
+            let fileData = try Data(contentsOf: fileUrl)
+            body.appendMultipartFile(
+                name: "file",
+                filename: fileUrl.lastPathComponent,
+                mimeType: mimeType(for: fileUrl),
+                data: fileData,
+                boundary: boundary
+            )
+        }
+
+        body.appendString("--\(boundary)--\r\n")
+        request.httpBody = body
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.badResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw NetworkError.invalidStatusCode(httpResponse.statusCode)
+        }
+
+        if let jsonObject = try? JSONSerialization.jsonObject(with: data),
+           JSONSerialization.isValidJSONObject(jsonObject),
+           let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted]),
+           let text = String(data: prettyData, encoding: .utf8) {
+            return text
+        }
+
+        return String(decoding: data, as: UTF8.self)
     }
 
     private func mimeType(for fileUrl: URL) -> String {

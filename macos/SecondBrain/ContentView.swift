@@ -12,6 +12,16 @@ struct ContentView: View {
                 .tabItem {
                     Label("New Entry", systemImage: "plus.circle")
                 }
+
+            AIQueryView()
+                .tabItem {
+                    Label("AI Query", systemImage: "brain")
+                }
+
+            ResultFilesView()
+                .tabItem {
+                    Label("Result Files", systemImage: "doc.text")
+                }
         }
         .frame(minWidth: 600, minHeight: 400)
     }
