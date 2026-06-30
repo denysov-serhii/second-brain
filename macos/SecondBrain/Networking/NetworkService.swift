@@ -154,7 +154,7 @@ final class NetworkService {
                let text = String(data: prettyData, encoding: .utf8) {
                 return text
             }
-            logger.warning("AI response JSON pretty print failed; returning raw response text.")
+            logger.warning("AI response JSON pretty print failed for endpoint \(provider.endpoint.absoluteString, privacy: .public); returning raw response text.")
         }
 
         return String(decoding: data, as: UTF8.self)
