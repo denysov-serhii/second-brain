@@ -62,7 +62,7 @@ final class NetworkService {
     }
 
     func uploadLog(content: String?, fileUrl: URL?) async throws {
-        let boundary = "Boundary\(UUID().uuidString.replacingOccurrences(of: "-", with: ""))"
+        let boundary = multipartBoundary()
         var request = URLRequest(url: ingestURL)
         request.httpMethod = "POST"
         request.setValue(
@@ -115,7 +115,7 @@ final class NetworkService {
             )
         }
 
-        let boundary = "Boundary\(UUID().uuidString.replacingOccurrences(of: "-", with: ""))"
+        let boundary = multipartBoundary()
         request.setValue(
             "multipart/form-data; boundary=\(boundary)",
             forHTTPHeaderField: "Content-Type"
@@ -158,6 +158,10 @@ final class NetworkService {
 
     private func mimeType(for fileUrl: URL) -> String {
         UTType(filenameExtension: fileUrl.pathExtension)?.preferredMIMEType ?? "application/octet-stream"
+    }
+
+    private func multipartBoundary() -> String {
+        "Boundary\(UUID().uuidString.replacingOccurrences(of: "-", with: ""))"
     }
 }
 

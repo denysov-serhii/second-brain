@@ -45,21 +45,21 @@ final class AIResultFileService {
 
         guard let urls = try? fileManager.contentsOfDirectory(
             at: resultsDirectory,
-            includingPropertiesForKeys: [.creationDateKey, .fileSizeKey, .isRegularFileKey],
+            includingPropertiesForKeys: [.creationDateKey, .contentModificationDateKey, .fileSizeKey, .isRegularFileKey],
             options: [.skipsHiddenFiles]
         ) else {
             return []
         }
 
         return urls.compactMap { url in
-            guard let values = try? url.resourceValues(forKeys: [.creationDateKey, .fileSizeKey, .isRegularFileKey]),
+            guard let values = try? url.resourceValues(forKeys: [.creationDateKey, .contentModificationDateKey, .fileSizeKey, .isRegularFileKey]),
                   values.isRegularFile == true else {
                 return nil
             }
 
             return AIResultFile(
                 url: url,
-                createdAt: values.creationDate ?? .now,
+                createdAt: values.creationDate ?? values.contentModificationDate ?? .distantPast,
                 fileSizeBytes: Int64(values.fileSize ?? 0)
             )
         }
