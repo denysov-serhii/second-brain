@@ -109,7 +109,16 @@ public class IngestionProcessingService {
             byte[] bytes = imageFile.getBytes();
             String contentType = safe(imageFile.getContentType());
             if (contentType.isEmpty()) {
-                contentType = "image/jpeg";
+                String filename = safe(imageFile.getOriginalFilename()).toLowerCase(Locale.ROOT);
+                if (filename.endsWith(".png")) {
+                    contentType = "image/png";
+                } else if (filename.endsWith(".gif")) {
+                    contentType = "image/gif";
+                } else if (filename.endsWith(".webp")) {
+                    contentType = "image/webp";
+                } else {
+                    contentType = "image/jpeg";
+                }
             }
             ByteArrayResource imageResource = new ByteArrayResource(bytes);
             MimeType mimeType = MimeType.valueOf(contentType);
@@ -143,12 +152,11 @@ public class IngestionProcessingService {
     private ClassificationResult parseClassificationResult(String llmJson, String extractedText) {
         try {
             String json = llmJson.trim();
-            if (json.startsWith("```")) {
-                int start = json.indexOf('\n') + 1;
-                int end = json.lastIndexOf("```");
-                if (end > start) {
-                    json = json.substring(start, end).trim();
-                }
+            if (json.contains("```")) {
+                // Strip opening fence (e.g. "```", "```json") and closing fence
+                json = json.replaceAll("(?s)^```[a-zA-Z]*\\r?\\n?", "")
+                           .replaceAll("(?s)\\r?\\n?```$", "")
+                           .trim();
             }
             var node = objectMapper.readTree(json);
             String rawType = node.path("log_type").asText("");
