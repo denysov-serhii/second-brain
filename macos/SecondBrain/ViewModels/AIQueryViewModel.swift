@@ -59,6 +59,7 @@ final class AIQueryViewModel {
             )
             state = .success(fileURL)
         } catch {
+            print("AI request failed: \(error)")
             state = .error("AI request failed. Check provider settings, API key, and network connection.")
         }
     }

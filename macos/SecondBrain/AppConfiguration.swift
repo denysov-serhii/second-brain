@@ -57,7 +57,7 @@ enum AppConfiguration {
         return [
             AIProviderConfiguration(
                 name: "OpenAI",
-                endpoint: URL(string: "https://api.openai.com/v1/responses")!,
+                endpoint: URL(string: "https://api.openai.com/v1/chat/completions")!,
                 apiKeyHeader: "Authorization",
                 apiKeyPrefix: "Bearer ",
                 apiKey: ""

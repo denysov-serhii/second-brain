@@ -161,7 +161,7 @@ final class NetworkService {
     }
 
     private func multipartBoundary() -> String {
-        "Boundary\(UUID().uuidString.replacingOccurrences(of: "-", with: ""))"
+        "Boundary-\(UUID().uuidString)"
     }
 }
 
