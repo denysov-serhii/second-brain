@@ -1,0 +1,12 @@
+com/secondbrain/server/SecondBrainApplication.class
+com/secondbrain/server/logs/domain/LogEntry.class
+com/secondbrain/server/logs/service/IngestionProcessingService$ClassificationResult.class
+com/secondbrain/server/logs/api/LogIngestionController.class
+com/secondbrain/server/logs/domain/SourceDevice.class
+com/secondbrain/server/logs/api/LogController.class
+com/secondbrain/server/logs/service/IngestionProcessingService.class
+com/secondbrain/server/logs/repository/LogEntryRepository.class
+com/secondbrain/server/logs/api/LogIngestionResponse.class
+com/secondbrain/server/logs/service/LogQueryService.class
+com/secondbrain/server/logs/domain/LogType.class
+com/secondbrain/server/logs/service/IngestionProcessingService$1.class
