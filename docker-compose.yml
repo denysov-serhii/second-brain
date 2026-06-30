@@ -34,6 +34,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/second_brain
       DB_USERNAME: second_brain
       DB_PASSWORD: second_brain
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-must-be-at-least-32-chars-long}
     ports:
       - "8080:8080"
 
