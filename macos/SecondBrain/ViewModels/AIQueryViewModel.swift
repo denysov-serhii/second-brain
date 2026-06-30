@@ -59,7 +59,7 @@ final class AIQueryViewModel {
             )
             state = .success(fileURL)
         } catch {
-            state = .error("AI request failed: \(error.localizedDescription)")
+            state = .error("AI request failed. Check provider settings, API key, and network connection.")
         }
     }
 

@@ -23,7 +23,8 @@ final class AIResultFileService {
         try ensureDirectoryExists()
 
         let millis = Int(Date().timeIntervalSince1970 * 1000)
-        let fileName = "ai_result_\(millis).json"
+        let suffix = UUID().uuidString.prefix(8)
+        let fileName = "ai_result_\(millis)_\(suffix).json"
         let targetURL = resultsDirectory.appendingPathComponent(fileName)
 
         let payload: [String: Any?] = [
@@ -58,7 +59,7 @@ final class AIResultFileService {
 
             return AIResultFile(
                 url: url,
-                createdAt: values.creationDate ?? .distantPast,
+                createdAt: values.creationDate ?? .now,
                 fileSizeBytes: Int64(values.fileSize ?? 0)
             )
         }
