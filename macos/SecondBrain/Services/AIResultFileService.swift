@@ -24,9 +24,9 @@ final class AIResultFileService {
     ) throws -> URL {
         try ensureDirectoryExists()
 
-        let millis = Int(Date().timeIntervalSince1970 * 1000)
+        let timestampMillis = Int(Date().timeIntervalSince1970 * 1000)
         let suffix = UUID().uuidString.prefix(8)
-        let fileName = "ai_result_\(millis)_\(suffix).json"
+        let fileName = "ai_result_\(timestampMillis)_\(suffix).json"
         let targetURL = resultsDirectory.appendingPathComponent(fileName)
 
         let payload: [String: Any?] = [

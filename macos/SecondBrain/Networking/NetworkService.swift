@@ -1,5 +1,6 @@
 import Foundation
 import UniformTypeIdentifiers
+import os
 
 enum NetworkError: Error {
     case badResponse
@@ -30,6 +31,7 @@ final class NetworkService {
     private let baseURL: URL
     private let ingestURL: URL
     private let session: URLSession
+    private let logger = Logger(subsystem: "com.secondbrain.macos", category: "network")
 
     init(baseURL: URL = AppConfiguration.apiBaseURL, session: URLSession = .shared) {
         self.baseURL = baseURL
@@ -147,10 +149,12 @@ final class NetworkService {
         }
 
         if let jsonObject = try? JSONSerialization.jsonObject(with: data),
-           JSONSerialization.isValidJSONObject(jsonObject),
-           let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted]),
-           let text = String(data: prettyData, encoding: .utf8) {
-            return text
+           JSONSerialization.isValidJSONObject(jsonObject) {
+            if let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted]),
+               let text = String(data: prettyData, encoding: .utf8) {
+                return text
+            }
+            logger.warning("AI response JSON pretty print failed; returning raw response text.")
         }
 
         return String(decoding: data, as: UTF8.self)

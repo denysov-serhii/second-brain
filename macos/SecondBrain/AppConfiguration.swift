@@ -27,7 +27,7 @@ enum AppConfiguration {
     /// [
     ///   {
     ///     "name": "OpenAI",
-    ///     "endpoint": "https://api.openai.com/v1/responses",
+    ///     "endpoint": "https://api.openai.com/v1/chat/completions",
     ///     "apiKeyHeader": "Authorization",
     ///     "apiKeyPrefix": "Bearer ",
     ///     "apiKey": "..."

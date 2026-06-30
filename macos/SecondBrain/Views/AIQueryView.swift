@@ -23,7 +23,7 @@ struct AIQueryView: View {
                 .border(Color.secondary.opacity(0.3))
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Attachment (audio/image/video/other media)")
+                Text("Attachment (Audio/Image/Video/Other media)")
                     .font(.headline)
 
                 HStack {
