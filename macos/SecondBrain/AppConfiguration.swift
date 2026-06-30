@@ -56,16 +56,16 @@ enum AppConfiguration {
 
         return [
             AIProviderConfiguration(
-                name: "OpenAI",
-                endpoint: URL(string: "https://api.openai.com/v1/chat/completions")!,
+                name: "Provider 1",
+                endpoint: URL(string: "https://api.secondbrain.example/ai/provider1")!,
                 apiKeyHeader: "Authorization",
                 apiKeyPrefix: "Bearer ",
                 apiKey: ""
             ),
             AIProviderConfiguration(
-                name: "Gemini",
-                endpoint: URL(string: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent")!,
-                apiKeyHeader: "x-goog-api-key",
+                name: "Provider 2",
+                endpoint: URL(string: "https://api.secondbrain.example/ai/provider2")!,
+                apiKeyHeader: "Authorization",
                 apiKeyPrefix: "",
                 apiKey: ""
             )

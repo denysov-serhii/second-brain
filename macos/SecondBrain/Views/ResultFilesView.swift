@@ -13,7 +13,9 @@ struct ResultFilesView: View {
                 List(viewModel.files) { file in
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(file.fileName).font(.body)
+                            Text(file.fileName)
+                                .font(.body)
+                                .accessibilityLabel("Result file \(file.fileName)")
                             Text(file.createdAt.formatted(date: .abbreviated, time: .shortened))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)

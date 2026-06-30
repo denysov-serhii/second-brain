@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import os
 
 enum AIQueryState {
     case idle
@@ -16,6 +17,7 @@ final class AIQueryViewModel {
 
     private let networkService: NetworkService
     private let resultFileService: AIResultFileService
+    private let logger = Logger(subsystem: "com.secondbrain.macos", category: "ai-query")
 
     init(
         networkService: NetworkService = NetworkService(),
@@ -59,7 +61,7 @@ final class AIQueryViewModel {
             )
             state = .success(fileURL)
         } catch {
-            print("AI request failed: \(error)")
+            logger.error("AI request failed: \(error.localizedDescription)")
             state = .error("AI request failed. Check provider settings, API key, and network connection.")
         }
     }

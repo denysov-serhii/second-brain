@@ -1,6 +1,8 @@
 import Foundation
 
 final class AIResultFileService {
+    private static let timestampFormatter = ISO8601DateFormatter()
+
     private let fileManager: FileManager
     private let resultsDirectory: URL
 
@@ -28,7 +30,7 @@ final class AIResultFileService {
         let targetURL = resultsDirectory.appendingPathComponent(fileName)
 
         let payload: [String: Any?] = [
-            "timestamp": ISO8601DateFormatter().string(from: .now),
+            "timestamp": Self.timestampFormatter.string(from: .now),
             "provider": providerName,
             "prompt": prompt,
             "attachment_file_name": attachmentFileName,
