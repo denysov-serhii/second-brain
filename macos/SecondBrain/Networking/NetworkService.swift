@@ -1,5 +1,6 @@
 import Foundation
 import UniformTypeIdentifiers
+import os
 
 enum NetworkError: Error {
     case badResponse
@@ -30,6 +31,7 @@ final class NetworkService {
     private let baseURL: URL
     private let ingestURL: URL
     private let session: URLSession
+    private let logger = Logger(subsystem: "com.secondbrain.macos", category: "network")
 
     init(baseURL: URL = AppConfiguration.apiBaseURL, session: URLSession = .shared) {
         self.baseURL = baseURL
@@ -62,7 +64,7 @@ final class NetworkService {
     }
 
     func uploadLog(content: String?, fileUrl: URL?) async throws {
-        let boundary = "Boundary-\(UUID().uuidString)"
+        let boundary = multipartBoundary()
         var request = URLRequest(url: ingestURL)
         request.httpMethod = "POST"
         request.setValue(
@@ -99,8 +101,71 @@ final class NetworkService {
         }
     }
 
+    func callAI(
+        provider: AIProviderConfiguration,
+        prompt: String,
+        fileUrl: URL?
+    ) async throws -> String {
+        var request = URLRequest(url: provider.endpoint)
+        request.httpMethod = "POST"
+
+        let apiKey = provider.apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !apiKey.isEmpty {
+            request.setValue(
+                provider.apiKeyPrefix + apiKey,
+                forHTTPHeaderField: provider.apiKeyHeader
+            )
+        }
+
+        let boundary = multipartBoundary()
+        request.setValue(
+            "multipart/form-data; boundary=\(boundary)",
+            forHTTPHeaderField: "Content-Type"
+        )
+
+        var body = Data()
+        body.appendMultipartField(name: "prompt", value: prompt, boundary: boundary)
+
+        if let fileUrl {
+            let fileData = try Data(contentsOf: fileUrl)
+            body.appendMultipartFile(
+                name: "file",
+                filename: fileUrl.lastPathComponent,
+                mimeType: mimeType(for: fileUrl),
+                data: fileData,
+                boundary: boundary
+            )
+        }
+
+        body.appendString("--\(boundary)--\r\n")
+        request.httpBody = body
+
+        let (data, response) = try await session.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.badResponse
+        }
+        guard (200...299).contains(httpResponse.statusCode) else {
+            throw NetworkError.invalidStatusCode(httpResponse.statusCode)
+        }
+
+        if let jsonObject = try? JSONSerialization.jsonObject(with: data),
+           JSONSerialization.isValidJSONObject(jsonObject) {
+            if let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted]),
+               let text = String(data: prettyData, encoding: .utf8) {
+                return text
+            }
+            logger.warning("AI response JSON pretty print failed for endpoint \(provider.endpoint.absoluteString, privacy: .public); returning raw response text.")
+        }
+
+        return String(decoding: data, as: UTF8.self)
+    }
+
     private func mimeType(for fileUrl: URL) -> String {
         UTType(filenameExtension: fileUrl.pathExtension)?.preferredMIMEType ?? "application/octet-stream"
+    }
+
+    private func multipartBoundary() -> String {
+        "Boundary-\(UUID().uuidString)"
     }
 }
 
